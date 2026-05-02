@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hit-counter-api
+  namespace: hit-counter
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hit-counter-api
+  template:
+    metadata:
+      labels:
+        app: hit-counter-api
+    spec:
+      containers:
+        - name: hit-counter-api
+          image: hit-counter:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: api-config
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+            

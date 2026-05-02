@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: hit-counter
+data:
+  REDIS_HOST: "redis-service"
