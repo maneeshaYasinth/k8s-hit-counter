@@ -44,3 +44,21 @@ kubectl port-forward svc/api-service 8080:80 -n hit-counter
 # 5. Hit it
 curl localhost:8080
 ```
+
+## Troubleshooting
+
+- Typo in readiness probe: if you see "strict decoding error: unknown field \"spec.template.spec.containers[0].redinessProbe\"",
+	check `k8s/api-deployment.yaml` for `redinessProbe` and change it to `readinessProbe`. Also ensure `initialDelaySeconds` and
+	`periodSeconds` are indented at the same level as `httpGet` under `readinessProbe`.
+- Namespace not found after create: if `kubectl apply -f k8s/` reports the namespace was created but later resources fail with
+	"namespaces \"hit-counter\" not found", apply the namespace first and wait before applying the rest:
+	```bash
+	kubectl apply -f k8s/namespace.yaml
+	kubectl wait --for=condition=Established namespace/hit-counter --timeout=10s || sleep 2
+	kubectl apply -f k8s/
+	```
+- Local image tips: if you use `imagePullPolicy: Never`, build and load the image into kind before applying manifests:
+	```bash
+	docker build -t hit-counter:v1 ./app
+	kind load docker-image hit-counter:v1 --name k8s-lab
+	```
